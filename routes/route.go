@@ -37,6 +37,19 @@ func createStatus(conn *sql.DB, actionCache actions.Queue) echo.HandlerFunc {
     if (status.Err != nil) {
       log.Println(err)
     } else {
+      reg, err := db.ReadRegistration(conn, status.Id)
+      if err != nil {
+        log.Println(err)
+        return c.String(http.StatusInternalServerError, "registration read failed")
+      }
+      if err := models.ValidateRegistration(reg); err != nil {
+        newReq := models.NewRegistration(status.Id)
+        err = db.InsertRegistration(conn, newReq)
+        if err != nil {
+          log.Println(err)
+          return c.String(http.StatusInternalServerError, "registration insertion failed")
+        }
+      }
       err = status.ValidateForInsert()
       if err != nil {
         log.Println(err)
@@ -63,17 +76,22 @@ func createQueue(actionCache actions.Queue) echo.HandlerFunc {
     if err := c.Bind(qr); err != nil {
       return c.String(http.StatusBadRequest, "invalid payload")
     }
-    // TODO verify that there are correct values with the associated type
     switch(qr.Type) {
       case models.ActionCalibrate:{
         actionCache.Push(actions.GenerateCalibrationAction(qr.Name))
         break;
       }
       case models.ActionConfig: {
+        if qr.Configuration == nil {
+          return c.String(http.StatusBadRequest, "configuration required")
+        }
         actionCache.Push(actions.GenerateConfigAction(qr.Name, *qr.Configuration))
         break;
       }
       case models.ActionCode: {
+        if qr.Code == nil {
+          return c.String(http.StatusBadRequest, "code required")
+        }
         actionCache.Push(actions.GenerateCodeResponse(qr.Name, *qr.Code))
         break;
       }
