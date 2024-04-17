@@ -15,7 +15,16 @@ const (
 
 type Action struct {
   Type ActionType
+  Name string
   Values map[string]interface{}
+}
+
+func NewAction(t ActionType, name string) Action {
+  return Action{
+    Type: t,
+    Name: name,
+    Values: make(map[string]interface{}),
+  }
 }
 
 func (a *Action) String() string {
@@ -27,7 +36,11 @@ func (a *Action) String() string {
     if !first {
       sb.WriteString(";")
     }
-    sb.WriteString(fmt.Sprintf("%s=%s", key, value))
+    if a.Type == ActionCode {
+      sb.WriteString(key)
+    } else {
+      sb.WriteString(fmt.Sprintf("%s=%s", key, value))
+    }
   }
   return sb.String()
 }

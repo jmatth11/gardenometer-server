@@ -25,3 +25,25 @@ func (q *Queue) Pop() (models.Action, error) {
 func (q *Queue) Len() int {
   return len(q.data)
 }
+
+func (q *Queue) NextActionForName(name string) (models.Action, bool) {
+  res := models.Action{}
+  targetIndex := -1
+  for i, e := range q.data {
+    if e.Name == name {
+      targetIndex = i
+      break
+    }
+  }
+  if targetIndex == -1 {
+    return res, false
+  }
+  target := q.data[targetIndex]
+  newOffset := targetIndex + 1
+  if newOffset > len(q.data) {
+    q.data = q.data[:targetIndex]
+  } else {
+    q.data = append(q.data[:targetIndex], q.data[targetIndex+1:]...)
+  }
+  return target, true
+}
