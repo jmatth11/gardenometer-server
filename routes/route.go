@@ -2,9 +2,9 @@ package routes
 
 import (
 	"database/sql"
-	"fmt"
 	"gardenometer/actions"
 	"gardenometer/db"
+	"gardenometer/email"
 	"gardenometer/helpers"
 	"gardenometer/models"
 	"gardenometer/status"
@@ -14,27 +14,33 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-  "golang.org/x/time/rate"
+	"golang.org/x/time/rate"
 )
 
-func getHome(conn *sql.DB, actionCache actions.Queue) echo.HandlerFunc {
+func getHome(conn *sql.DB, actionCache *actions.Queue) echo.HandlerFunc {
   return func (c echo.Context) error {
-    fmt.Println("calling from: ", c.Request().Header.Get("User-Agent"))
-    request, err := db.ReadAllRegistration(conn)
-    if err != nil {
-      return c.Render(http.StatusInternalServerError, "error", err)
-    }
-    return c.Render(http.StatusOK, "index", request)
+    log.Println("calling from: ", c.Request().Header.Get("User-Agent"))
+    return c.Render(http.StatusOK, "index", "")
   }
 }
 
+func getRegistrationList(conn *sql.DB, actionCache *actions.Queue) echo.HandlerFunc {
+  return func (c echo.Context) error {
+    registrationList, err := db.ReadLatestMetricForEachName(conn)
+    if err != nil {
+      log.Println(err)
+      return c.Render(http.StatusInternalServerError, "error", err)
+    }
+    return c.Render(http.StatusOK, "registration_list", registrationList)
+  }
+}
 
 func ping(c echo.Context) error {
-  fmt.Println("calling from: ", c.Request().Header.Get("User-Agent"))
+  log.Println("calling from: ", c.Request().Header.Get("User-Agent"))
   return c.String(http.StatusOK, "gardenometer")
 }
 
-func createStatus(conn *sql.DB, actionCache actions.Queue) echo.HandlerFunc {
+func createStatus(conn *sql.DB, actionCache *actions.Queue) echo.HandlerFunc {
   return func(c echo.Context) error {
     body := c.Request().Body
     sp := new(status.Payload)
@@ -68,6 +74,7 @@ func createStatus(conn *sql.DB, actionCache actions.Queue) echo.HandlerFunc {
       metric := models.Metric{}
       metric.FromStatus(status)
       if err := db.InsertMetric(conn, metric); err != nil {
+        log.Println(err)
         c.String(http.StatusInternalServerError, err.Error())
       }
     }
@@ -80,7 +87,7 @@ func createStatus(conn *sql.DB, actionCache actions.Queue) echo.HandlerFunc {
   }
 }
 
-func createQueue(actionCache actions.Queue) echo.HandlerFunc {
+func createQueue(actionCache *actions.Queue) echo.HandlerFunc {
   return func(c echo.Context) error {
     qr := new(models.QueueRequest)
     if err := c.Bind(qr); err != nil {
@@ -110,7 +117,7 @@ func createQueue(actionCache actions.Queue) echo.HandlerFunc {
   }
 }
 
-func Setup(e *echo.Echo, conn *sql.DB, actionCache actions.Queue) {
+func Setup(e *echo.Echo, conn *sql.DB, actionCache *actions.Queue, emailHandler *email.EmailClient) {
   e.Pre(middleware.RemoveTrailingSlash())
   e.Use(middleware.Recover())
   e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(
@@ -121,7 +128,8 @@ func Setup(e *echo.Echo, conn *sql.DB, actionCache actions.Queue) {
 
   helpers.NewTemplateRenderer(e)
 
-  e.GET("/", home)
+  e.GET("/", getHome(conn, actionCache))
+  e.GET("/registration_list", getRegistrationList(conn, actionCache))
   e.GET("/status", ping)
   e.POST("/status", createStatus(conn, actionCache))
   e.POST("/queue", createQueue(actionCache))

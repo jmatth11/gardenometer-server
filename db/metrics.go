@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"gardenometer/models"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,6 +34,38 @@ func ReadMetricBetweenTimes(db *sql.DB, begin time.Time, end time.Time) ([]model
   for rows.Next() {
     m := models.Metric{}
     err = rows.Scan(&m.Id, &m.Name, &m.Moisture, &m.Temp, &m.Lux, &m.UpdatedAt)
+    if err != nil {
+      return nil, err
+    }
+    result = append(result, m)
+  }
+  err = rows.Err()
+  if err != nil {
+    return nil, err
+  }
+  return result, nil
+}
+
+func ReadLatestMetricForEachName(db *sql.DB) ([]models.RegistrationList, error) {
+  sb := strings.Builder{}
+  sb.WriteString("SELECT id, reg.name as name, is_active, moisture, temp, lux, ")
+  sb.WriteString("reg.updated_at as reg_ts, met.updated_at as met_ts FROM (")
+  sb.WriteString("SELECT DISTINCT ON (\"name\") * FROM ")
+  sb.WriteString(METRIC_TABLE)
+  sb.WriteString(" ORDER BY name, updated_at DESC) as met JOIN ")
+  sb.WriteString(REGISTRATION_TABLE)
+  sb.WriteString(" as reg ON reg.name = met.name")
+  rows, err := db.Query(sb.String())
+  if err != nil {
+    return nil, err
+  }
+  defer rows.Close()
+  result := make([]models.RegistrationList, 0)
+  for rows.Next() {
+    m := models.RegistrationList{}
+    err = rows.Scan(&m.Id, &m.Name,
+      &m.IsActive, &m.Moisture, &m.Temp, &m.Lux,
+      &m.RegistrationUpdatedAt, &m.UpdatedAt)
     if err != nil {
       return nil, err
     }
