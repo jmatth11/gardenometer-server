@@ -14,25 +14,31 @@ const (
   METRIC_TABLE = "metrics"
 )
 
-func ReadMetric(db *sql.DB, id uuid.UUID) (models.Metric, error) {
-  result := models.Metric{}
+func ReadMetric(db *sql.DB, id uuid.UUID) (*models.Metric, error) {
+  result := &models.Metric{}
   row := db.QueryRow("SELECT * FROM " + METRIC_TABLE + " WHERE id = $1", id)
   if (row == nil) {
     return result, errors.New("metric not found")
   }
-  row.Scan(&result.Id, &result.Name, &result.Moisture, &result.Temp, &result.Lux, &result.UpdatedAt)
+  err := row.Scan(&result.Id, &result.Name, &result.Moisture, &result.Temp, &result.Lux, &result.UpdatedAt)
+  if err == sql.ErrNoRows {
+    return nil, nil
+  }
+  if err != nil {
+    return nil, err
+  }
   return result, nil
 }
 
-func ReadMetricBetweenTimes(db *sql.DB, begin time.Time, end time.Time) ([]models.Metric, error) {
+func ReadMetricBetweenTimes(db *sql.DB, begin time.Time, end time.Time) ([]*models.Metric, error) {
   rows, err := db.Query("SELECT * FROM " + METRIC_TABLE + " WHERE updated_at BETWEEN $1 AND $2", begin, end)
   if err != nil {
     return nil, err
   }
   defer rows.Close()
-  result := make([]models.Metric, 0);
+  result := make([]*models.Metric, 0);
   for rows.Next() {
-    m := models.Metric{}
+    m := &models.Metric{}
     err = rows.Scan(&m.Id, &m.Name, &m.Moisture, &m.Temp, &m.Lux, &m.UpdatedAt)
     if err != nil {
       return nil, err
@@ -46,7 +52,7 @@ func ReadMetricBetweenTimes(db *sql.DB, begin time.Time, end time.Time) ([]model
   return result, nil
 }
 
-func ReadLatestMetricForEachName(db *sql.DB) ([]models.RegistrationList, error) {
+func ReadLatestMetricForEachName(db *sql.DB) ([]*models.RegistrationList, error) {
   sb := strings.Builder{}
   sb.WriteString("SELECT id, reg.name as name, is_active, moisture, temp, lux, ")
   sb.WriteString("reg.updated_at as reg_ts, met.updated_at as met_ts FROM (")
@@ -60,9 +66,9 @@ func ReadLatestMetricForEachName(db *sql.DB) ([]models.RegistrationList, error) 
     return nil, err
   }
   defer rows.Close()
-  result := make([]models.RegistrationList, 0)
+  result := make([]*models.RegistrationList, 0)
   for rows.Next() {
-    m := models.RegistrationList{}
+    m := &models.RegistrationList{}
     err = rows.Scan(&m.Id, &m.Name,
       &m.IsActive, &m.Moisture, &m.Temp, &m.Lux,
       &m.RegistrationUpdatedAt, &m.UpdatedAt)
@@ -86,9 +92,6 @@ func InsertMetric(db *sql.DB, m models.Metric) error {
     return err
   }
   _, err = stmt.Exec(m.Id, m.Name, m.Moisture, m.Temp, m.Lux, m.UpdatedAt)
-  if err != nil {
-    return err
-  }
   defer stmt.Close()
-  return nil
+  return err
 }

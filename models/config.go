@@ -20,3 +20,7 @@ type Config struct {
   Err *int `json:"err"`
   Good *int `json:"good"`
 }
+
+type ConfigTab struct {
+  Devices []string
+}
