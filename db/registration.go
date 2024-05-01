@@ -55,8 +55,15 @@ func InsertRegistration(db *sql.DB, reg *models.Registration) error {
   }
   defer stmt.Close()
   _, err = stmt.Exec(reg.Name, reg.IsActive, reg.UpdatedAt)
+  return err
+}
+
+func UpdateRegistrationIsActive(conn *sql.DB, name string, isActive bool) error {
+  stmt, err := conn.Prepare("UPDATE " + REGISTRATION_TABLE + " SET is_active = $1 WHERE name = $2")
   if err != nil {
     return err
   }
-  return nil
+  defer stmt.Close()
+  _, err = stmt.Exec(isActive, name)
+  return err
 }
