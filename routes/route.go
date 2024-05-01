@@ -51,6 +51,33 @@ func getConfigTab(conn *sql.DB) echo.HandlerFunc {
   }
 }
 
+func getCalibrate(conn *sql.DB, actionCache *actions.Queue) echo.HandlerFunc {
+  return func (c echo.Context) error {
+    id := c.Param("id")
+    if id == "" {
+      return c.Render(http.StatusBadRequest, "error", "Must supply an ID")
+    }
+    req, err := db.ReadRegistration(conn, id)
+    if err != nil {
+      log.Println(err)
+      return c.Render(http.StatusInternalServerError, "error", err)
+    }
+    if req == nil {
+      t := models.Toast{
+        Message: "Device is not registered",
+        ClassName: "notification is-danger",
+      }
+      return c.Render(http.StatusNotFound, "toast", t)
+    }
+    actionCache.Push(actions.GenerateCalibrationAction(req.Name))
+    t := models.Toast{
+      Message: "Calibration request queued.",
+      ClassName: "notification is-primary",
+    }
+    return c.Render(http.StatusOK, "toast", t)
+  }
+}
+
 func ping(c echo.Context) error {
   log.Println("calling from: ", c.Request().Header.Get("User-Agent"))
   return c.String(http.StatusOK, "gardenometer")
@@ -75,5 +102,6 @@ func Setup(e *echo.Echo, conn *sql.DB, actionCache *actions.Queue, emailHandler 
   e.POST("/queue", createQueue(actionCache))
   e.POST("/alert", createAlert(conn))
   e.POST("/config", createConfig(conn, actionCache, emailHandler))
+  e.GET("/calibrate/:id", getCalibrate(conn, actionCache))
 }
 

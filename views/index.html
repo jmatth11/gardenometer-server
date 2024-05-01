@@ -43,6 +43,7 @@
         <th>Lux</th>
         <th>Registration Time</th>
         <th>Last Updated</th>
+        <th>Calibrate</th>
       </tr>
     </thead>
     <tbody>
@@ -64,6 +65,7 @@
   <td>{{ .Lux }}</td>
   <td>{{ .RegistrationUpdatedAt }}</td>
   <td>{{ .UpdatedAt }}</td>
+  <td><button type="button" hx-get="/calibrate/{{ .Name }}">Queue</button></td>
 </tr>
 {{ end }}
 

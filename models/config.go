@@ -11,6 +11,10 @@ const (
   ConfigGood
 )
 
+type ConfigRequest struct {
+
+}
+
 type Config struct {
   Wait *int `json:"wait"`
   Moisture *int `json:"moisture"`
