@@ -63,18 +63,15 @@ func getCalibrate(conn *sql.DB, actionCache *actions.Queue) echo.HandlerFunc {
       return c.Render(http.StatusInternalServerError, "error", err)
     }
     if req == nil {
-      t := models.Toast{
-        Message: "Device is not registered",
-        ClassName: "notification is-danger",
-      }
-      return c.Render(http.StatusNotFound, "toast", t)
+      return c.Render(
+        http.StatusNotFound,
+        "toast",
+        ErrorToast("Device is not registered"),
+      )
     }
     actionCache.Push(actions.GenerateCalibrationAction(req.Name))
-    t := models.Toast{
-      Message: "Calibration request queued.",
-      ClassName: "notification is-primary",
-    }
-    return c.Render(http.StatusOK, "toast", t)
+    return c.Render(
+      http.StatusOK, "toast", SuccessToast("Calibration request queued."))
   }
 }
 
@@ -90,11 +87,8 @@ func getFlipIsActive(conn *sql.DB) echo.HandlerFunc {
       return c.Render(http.StatusInternalServerError, "error", err)
     }
     if req == nil {
-      t := models.Toast{
-        Message: "Device is not registered",
-        ClassName: "notification is-danger",
-      }
-      return c.Render(http.StatusNotFound, "toast", t)
+      return c.Render(
+        http.StatusNotFound, "toast", ErrorToast("Device is not registered."))
     }
     req.IsActive = !req.IsActive
     err = db.UpdateRegistrationIsActive(conn, req.Name, req.IsActive)
@@ -102,7 +96,10 @@ func getFlipIsActive(conn *sql.DB) echo.HandlerFunc {
       log.Println(err)
       return c.Render(http.StatusInternalServerError, "error", err)
     }
-    return c.Render(http.StatusOK, "active_update", req)
+    c.Render(
+      http.StatusOK, "toast", SuccessToast("Active State Changed"))
+    return c.Render(
+      http.StatusOK, "active_update", req)
   }
 }
 

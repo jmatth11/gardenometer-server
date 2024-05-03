@@ -14,7 +14,7 @@
 </head>
 <body>
     <div class="toast">
-        <div hx-swap-oob="outerHTML:#toast" id="toast" class="">
+        <div id="toast" class="">
         </div>
     </div>
 
@@ -65,7 +65,7 @@
   <td>{{ .Lux }}</td>
   <td>{{ .RegistrationUpdatedAt }}</td>
   <td>{{ .UpdatedAt }}</td>
-  <td><button type="button" hx-get="/calibrate/{{ .Name }}">Queue</button></td>
+  <td><button type="button" hx-get="/calibrate/{{ .Name }}" hx-swap="none">Queue</button></td>
 </tr>
 {{ end }}
 
