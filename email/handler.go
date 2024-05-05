@@ -31,11 +31,11 @@ func (ec *EmailClient) SendMail(message string) error {
   bodyMessage := bytes.Buffer{}
   bodyMessage.WriteString("From: ")
   bodyMessage.WriteString(ec.email)
-  bodyMessage.WriteString("\\r")
+  bodyMessage.WriteString("\\r\\n")
   bodyMessage.WriteString("To: ")
   bodyMessage.WriteString(strings.Join(ec.To, ", "))
-  bodyMessage.WriteString("\\r")
-  bodyMessage.WriteString("Subject: Gardenometer Update\\r\\r")
+  bodyMessage.WriteString("\\r\\n")
+  bodyMessage.WriteString("Subject: Gardenometer Update\\r\\n")
   bodyMessage.WriteString(message)
   return smtp.SendMail(fmt.Sprintf("%s:%s", SmtpHost, SmtpPort), auth, ec.email, ec.To, bodyMessage.Bytes())
 }

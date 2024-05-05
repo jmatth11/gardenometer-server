@@ -103,6 +103,24 @@ func getFlipIsActive(conn *sql.DB) echo.HandlerFunc {
   }
 }
 
+func getDisplayPage(conn *sql.DB) echo.HandlerFunc {
+  return func(c echo.Context) error {
+    req, err := db.ReadAllRegistration(conn)
+    if err != nil {
+      log.Println(err)
+      return c.Render(http.StatusInternalServerError, "error", err)
+    }
+    names := make([]string, 0, len(req))
+    for _, v := range req {
+      names = append(names, v.Name)
+    }
+    ct := models.ConfigTab{
+      Devices: names,
+    }
+    return c.Render(http.StatusOK, "display_page", ct)
+  }
+}
+
 func ping(c echo.Context) error {
   log.Println("calling from: ", c.Request().Header.Get("User-Agent"))
   return c.String(http.StatusOK, "gardenometer")
@@ -129,5 +147,7 @@ func Setup(e *echo.Echo, conn *sql.DB, actionCache *actions.Queue, emailHandler 
   e.POST("/config", createConfig(conn, actionCache, emailHandler))
   e.GET("/calibrate/:id", getCalibrate(conn, actionCache))
   e.GET("/change-active/:id", getFlipIsActive(conn))
+  e.GET("/display", getDisplayPage(conn))
+  e.GET("/display/:id/:time", getDisplay(conn))
 }
 
