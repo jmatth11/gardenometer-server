@@ -1,4 +1,12 @@
 services:
+  mosquitto:
+    image: eclipse-mosquitto
+    restart: always
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - mqttData:/mosquitto/data
   postgres:
     image: postgres
     restart: always
@@ -12,3 +20,4 @@ services:
       - POSTGRES_DB=gardenometer_db
 volumes:
   pgdata:
+  mqttData:
