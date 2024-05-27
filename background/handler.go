@@ -38,6 +38,7 @@ func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
   now := time.Now()
   timeThreshold := time.Minute * 10
   sb := strings.Builder{}
+  shouldEmail := false
   for _, e := range activities {
     // skip inactive devices
     if !e.IsActive {
@@ -45,6 +46,7 @@ func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
     }
     diff := now.Sub(e.UpdatedAt)
     if diff > timeThreshold {
+      shouldEmail = true
       sb.WriteString(e.Name)
       sb.WriteString(" has been offline for more than 10 minutes\n")
       sb.WriteString("Last activity: ")
@@ -52,7 +54,7 @@ func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
       sb.WriteString("\n")
     }
   }
-  if sb.Len() > 0 {
+  if shouldEmail {
     err := emailClient.SendMail(sb.String())
     if err != nil {
       log.Println(err)
