@@ -14,23 +14,11 @@ func GenerateConfigAction(name string, c models.Config) models.Action {
   if c.Wait != nil {
     res.Values[fmt.Sprint(models.ConfigWait)] = *c.Wait
   }
-  if c.Moisture != nil {
-    res.Values[fmt.Sprint(models.ConfigMoisture)] = *c.Moisture
+  if c.MoistureAir != nil {
+    res.Values[fmt.Sprint(models.ConfigMoistureAir)] = *c.MoistureAir
   }
-  if c.Lux != nil {
-    res.Values[fmt.Sprint(models.ConfigLux)] = *c.Lux
-  }
-  if c.Temp != nil {
-    res.Values[fmt.Sprint(models.ConfigTemp)] = *c.Temp
-  }
-  if c.Cal != nil {
-    res.Values[fmt.Sprint(models.ConfigCal)] = *c.Cal
-  }
-  if c.Err != nil {
-    res.Values[fmt.Sprint(models.ConfigErr)] = *c.Err
-  }
-  if c.Good != nil {
-    res.Values[fmt.Sprint(models.ConfigGood)] = *c.Good
+  if c.MoistureWater != nil {
+    res.Values[fmt.Sprint(models.ConfigMoistureWater)] = *c.MoistureWater
   }
   return res
 }

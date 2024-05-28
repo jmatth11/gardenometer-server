@@ -23,3 +23,12 @@ CREATE TABLE IF NOT EXISTS alerts (
   value real NOT NULL
 );
 CREATE INDEX IF NOT EXISTS alerts_name_idx ON alerts ("name");
+
+CREATE TABLE IF NOT EXISTS config (
+  name varchar UNIQUE NOT NULL,
+  moisture_air integer NOT NULL,
+  moisture_water integer NOT NULL,
+  wait_time integer NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS config_name_idx ON config ("name");

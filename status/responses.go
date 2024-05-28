@@ -19,47 +19,19 @@ func GenerateConfigResponse(c models.Config) string {
     second = true
     sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigWait, *c.Wait))
   }
-  if c.Moisture != nil {
+  if c.MoistureAir != nil {
     if second {
       sb.WriteString(";")
     }
     second = true
-    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigMoisture, *c.Moisture))
+    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigMoistureAir, *c.MoistureAir))
   }
-  if c.Lux != nil {
+  if c.MoistureWater != nil {
     if second {
       sb.WriteString(";")
     }
     second = true
-    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigLux, *c.Lux))
-  }
-  if c.Temp != nil {
-    if second {
-      sb.WriteString(";")
-    }
-    second = true
-    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigTemp, *c.Temp))
-  }
-  if c.Cal != nil {
-    if second {
-      sb.WriteString(";")
-    }
-    second = true
-    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigCal, *c.Cal))
-  }
-  if c.Err != nil {
-    if second {
-      sb.WriteString(";")
-    }
-    second = true
-    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigErr, *c.Err))
-  }
-  if c.Good != nil {
-    if second {
-      sb.WriteString(";")
-    }
-    second = true
-    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigGood, *c.Good))
+    sb.WriteString(fmt.Sprintf("%d=%d", models.ConfigMoistureWater, *c.MoistureWater))
   }
   return sb.String()
 }
