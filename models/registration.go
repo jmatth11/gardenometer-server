@@ -29,7 +29,7 @@ func NewRegistration(name string) *Registration {
   return &Registration{
     Name: name,
     IsActive: true,
-    UpdatedAt: time.Now(),
+    UpdatedAt: time.Now().UTC(),
   }
 }
 

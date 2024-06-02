@@ -86,7 +86,7 @@ func ReadLatestMetricForEachName(db *sql.DB) ([]*models.RegistrationList, error)
 
 func InsertMetric(db *sql.DB, m models.Metric) error {
   m.Id = uuid.New()
-  m.UpdatedAt = time.Now()
+  m.UpdatedAt = time.Now().UTC()
   stmt, err := db.Prepare("INSERT INTO " + METRIC_TABLE + " (id, name, moisture, temp, lux, updated_at) VALUES ($1, $2, $3, $4, $5, $6)")
   if err != nil {
     return err

@@ -36,7 +36,7 @@ func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
       log.Println(err)
     }
   }
-  now := time.Now()
+  now := time.Now().UTC()
   timeThreshold := time.Minute * 10
   sb := strings.Builder{}
   shouldEmail := false
