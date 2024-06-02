@@ -24,6 +24,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
+  let chartEl = null;
   CHART_COLORS = {
     red: 'rgb(255, 99, 132)',
     orange: 'rgb(255, 159, 64)',
@@ -53,7 +54,10 @@
           light.push(entry.Lux);
           timeline.push((new Date(entry.UpdatedAt)).toISOString().split('T')[0]);
         });
-        new Chart(ctx, {
+        if (chartEl !== null) {
+          chartEl.destroy();
+        }
+        chartEl = new Chart(ctx, {
           type: 'line',
           data: {
             labels: timeline,

@@ -2,6 +2,7 @@ package background
 
 import (
 	"database/sql"
+	"fmt"
 	"gardenometer/db"
 	"gardenometer/email"
 	"log"
@@ -44,24 +45,26 @@ func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
     if !e.IsActive {
       continue
     }
-    diff := now.Sub(e.UpdatedAt)
-    if diff > timeThreshold {
-      shouldEmail = true
-      sb.WriteString(e.Name)
-      sb.WriteString(" has been offline for more than 10 minutes\n")
-      sb.WriteString("Last activity: ")
-      sb.WriteString(e.UpdatedAt.String())
-      sb.WriteString("\n")
-      // adding this for debugging
-      sb.WriteString("now: ")
-      sb.WriteString(now)
-      sb.WriteString("\n")
-      sb.WriteString("Diff: ")
-      sb.WriteString(diff)
-      sb.WriteString("\n")
-      sb.WriteString("timeThreshold: ")
-      sb.WriteString(timeThreshold)
-      sb.WriteString("\n")
+    if !now.Before(e.UpdatedAt) {
+      diff := now.Sub(e.UpdatedAt)
+      if diff > timeThreshold {
+        shouldEmail = true
+        sb.WriteString(e.Name)
+        sb.WriteString(" has been offline for more than 10 minutes\n")
+        sb.WriteString("Last activity: ")
+        sb.WriteString(e.UpdatedAt.String())
+        sb.WriteString("\n")
+        // adding this for debugging
+        sb.WriteString("now: ")
+        sb.WriteString(now.String())
+        sb.WriteString("\n")
+        sb.WriteString("Diff: ")
+        sb.WriteString(fmt.Sprintf("%v", diff))
+        sb.WriteString("\n")
+        sb.WriteString("timeThreshold: ")
+        sb.WriteString(fmt.Sprintf("%v", timeThreshold))
+        sb.WriteString("\n")
+      }
     }
   }
   if shouldEmail {
