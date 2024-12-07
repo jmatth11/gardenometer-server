@@ -15,6 +15,41 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func handleStatusMessage(sp *status.Payload, c echo.Context, conn *sql.DB, actionCache *actions.Queue, emailClient *email.EmailClient) error {
+  status := sp.ParseStatus()
+  if (status.Err != nil) {
+    log.Println(status.Err)
+    emailClient.SendMail(fmt.Sprintf("Device %s delivered error: %s", status.Id, *status.Err))
+    return c.String(http.StatusOK, "")
+  }
+  err := addRegistration(conn, &status)
+  if err != nil {
+    log.Println(err)
+    return c.String(http.StatusInternalServerError, "registration error")
+  }
+  err = status.ValidateForInsert()
+  if err != nil {
+    log.Println(err)
+    return c.String(http.StatusBadRequest, "must include all metric values")
+  }
+  metric := models.Metric{}
+  metric.FromStatus(status)
+  if err := db.InsertMetric(conn, metric); err != nil {
+    log.Println(err)
+    c.String(http.StatusInternalServerError, err.Error())
+  }
+  if err := applyAlerts(conn, metric, emailClient); err != nil {
+    log.Println(err)
+    return c.String(http.StatusInternalServerError, "alerts error")
+  }
+  a, found := actionCache.NextActionForName(status.Id)
+  result := ""
+  if found {
+    result = a.String()
+  }
+  return c.String(http.StatusOK, result)
+}
+
 func createStatus(conn *sql.DB, actionCache *actions.Queue, emailClient *email.EmailClient) echo.HandlerFunc {
   return func(c echo.Context) error {
     body := c.Request().Body
@@ -24,38 +59,17 @@ func createStatus(conn *sql.DB, actionCache *actions.Queue, emailClient *email.E
       log.Println(err)
       return c.String(http.StatusInternalServerError, "error handling request")
     }
-    status := sp.ParseStatus()
-    if (status.Err != nil) {
-      log.Println(status.Err)
-      emailClient.SendMail(fmt.Sprintf("Device %s delivered error: %s", status.Id, *status.Err))
-      return c.String(http.StatusOK, "")
+    parseType := sp.GetParseType()
+    switch (parseType) {
+      case status.ParseStatus: {
+        return handleStatusMessage(sp, c, conn, actionCache, emailClient)
+      }
+      case status.ParseConfig:
+        // TODO handle config parse
+        return c.String(http.StatusNotImplemented, "")
+      default:
+        return c.String(http.StatusBadRequest, "not a valid status option")
     }
-    err = addRegistration(conn, &status)
-    if err != nil {
-      log.Println(err)
-      return c.String(http.StatusInternalServerError, "registration error")
-    }
-    err = status.ValidateForInsert()
-    if err != nil {
-      log.Println(err)
-      return c.String(http.StatusBadRequest, "must include all metric values")
-    }
-    metric := models.Metric{}
-    metric.FromStatus(status)
-    if err := db.InsertMetric(conn, metric); err != nil {
-      log.Println(err)
-      c.String(http.StatusInternalServerError, err.Error())
-    }
-    if err := applyAlerts(conn, metric, emailClient); err != nil {
-      log.Println(err)
-      return c.String(http.StatusInternalServerError, "alerts error")
-    }
-    a, found := actionCache.NextActionForName(status.Id)
-    result := ""
-    if found {
-      result = a.String()
-    }
-    return c.String(http.StatusOK, result)
   }
 }
 

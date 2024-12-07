@@ -4,43 +4,65 @@ import (
 	"database/sql"
 	"gardenometer/actions"
 	"gardenometer/db"
-	"gardenometer/email"
 	"gardenometer/models"
-	"io"
 	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-func upsertConfig(conn *sql.DB, actionCache *actions.Queue, emailHandler *email.EmailClient) echo.HandlerFunc {
+func upsertConfig(conn *sql.DB, actionCache *actions.Queue) echo.HandlerFunc {
   return func(c echo.Context) error {
-    body := c.Request().Body
-    conf := new(models.ConfigRequest)
-    _, err := io.Copy(conf, body)
+    var configObj models.ConfigData
+    err := c.Bind(&configObj)
     if err != nil {
       log.Println(err)
-      return c.String(http.StatusInternalServerError, "error handling request")
+      return c.String(http.StatusBadRequest, "error with request")
     }
-    configObj := conf.ParseConfig()
     existingConf, err := db.ReadConfigForDevice(conn, configObj.Name)
     if existingConf == nil && err == nil {
-      err := db.InsertConfigForDevice(conn, configObj)
+      err := db.InsertConfigForDevice(conn, &configObj)
       if err != nil {
         log.Println(err)
         return c.String(http.StatusInternalServerError, "error inserting config")
       }
-    }
-    if err != nil {
+    } else if err != nil {
       log.Println(err)
       return c.String(http.StatusInternalServerError, "error reading config")
+    } else {
+      err = db.UpdateConfigForDevice(conn, &configObj)
+      if err != nil {
+        log.Println(err)
+        return c.String(http.StatusInternalServerError, "error updating config")
+      }
     }
-    err = db.UpdateConfigForDevice(conn, configObj)
-    if err != nil {
+    actionCache.Push(actions.GenerateConfigAction(configObj.Name, configObj.ToConfig()))
+    return c.String(http.StatusOK, "")
+  }
+}
+
+func getConfig(conn *sql.DB) echo.HandlerFunc {
+  return func(c echo.Context) error {
+    id := c.Param("id")
+    if id == "" {
+      return c.String(http.StatusBadRequest, "error: Must supply an ID")
+    }
+    conf, err := db.ReadConfigForDevice(conn, id)
+    if conf == nil && err == nil {
+      return c.JSON(
+        http.StatusAccepted,
+        models.ConfigData{
+          Name: id,
+          Wait: 1000,
+          MoistureAir: 0,
+          MoistureWater: 0,
+        },
+      )
+    } else if err != nil {
       log.Println(err)
-      return c.String(http.StatusInternalServerError, "error updating config")
+      return c.String(http.StatusInternalServerError, err.Error())
     }
-    return nil
+    return c.JSON(http.StatusOK, conf)
   }
 }
 

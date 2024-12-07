@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-// Configuration enum for addressing which pin to set
 const (
   ConfigWait = iota
   ConfigMoistureAir
@@ -23,8 +22,16 @@ type Config struct {
   MoistureWater *int `json:"moisture_water"`
 }
 
+type ConfigData struct {
+  Name string `json:"name"`
+  Wait int `json:"wait"`
+  MoistureAir int `json:"moisture_air"`
+  MoistureWater int `json:"moisture_water"`
+}
+
 type ConfigTab struct {
   Devices []string
+  Configurations map[string]*ConfigData
 }
 
 func (c *ConfigRequest) Write(p []byte) (n int, err error) {
@@ -77,6 +84,18 @@ func (c *ConfigRequest) ParseConfig() *Config {
       }
     }
   }
+  return result
+}
+
+func (cd *ConfigData) ToConfig() Config {
+  result := Config{
+    Wait: new(int),
+    MoistureAir: new(int),
+    MoistureWater: new(int),
+  }
+  *result.Wait = cd.Wait
+  *result.MoistureAir = cd.MoistureAir
+  *result.MoistureWater = cd.MoistureWater
   return result
 }
 

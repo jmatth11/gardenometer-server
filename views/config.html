@@ -7,8 +7,7 @@
 </div>
 
 <div id="tab-content" role="tabpanel" class="tab-content">
-  <form
-  hx-post="/config">
+  <form>
     <div>Config</div>
     <div>
       <label for="config_name">Device Name</label>
@@ -19,37 +18,70 @@
       <input type="number" id="config_wait" name="config_wait" />
     </div>
     <div>
-      <label for="moisture_pin">Moisture Pin</label>
-      <input type="number" id="moisture_pin" name="moisture_pin" />
+      <label for="moisture_air">Moisture Air</label>
+      <input type="number" id="moisture_air" name="moisture_air" />
     </div>
     <div>
-      <label for="temp_pin">Temperature Pin</label>
-      <input type="number" id="temp_pin" name="temp_pin" />
+      <label for="moisture_water">Moisture Water</label>
+      <input type="number" id="moisture_water" name="moisture_water" />
     </div>
-    <div>
-      <label for="lux_pin">Lux Pin</label>
-      <input type="number" id="lux_pin" name="lux_pin" />
-    </div>
-    <div>
-      <label for="cal_pin">Calibration Light Pin</label>
-      <input type="number" id="cal_pin" name="cal_pin" />
-    </div>
-    <div>
-      <label for="err_pin">Error Light Pin</label>
-      <input type="number" id="err_pin" name="err_pin" />
-    </div>
-    <div>
-      <label for="good_pin">Good Light Pin</label>
-      <input type="number" id="good_pin" name="good_pin" />
-    </div>
-    <input type="submit" value="Submit" />
+    <input type="button" value="Submit" />
   </form>
 </div>
+
+<script type="text/javascript">
+
+function deviceNameChange() {
+  const id = document.getElementById("config_device_name").value;
+  fetch(`/config/${id}`).then(res => {
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw res;
+    }
+    return res.json();
+  }).then(data => {
+    document.getElementById("moisture_air").value = data.moisture_air;
+    document.getElementById("moisture_water").value = data.moisture_water;
+    document.getElementById("config_wait").value = data.wait;
+  }).catch(err => {
+    console.error(err);
+    alert(err);
+  });
+}
+
+function submitConfig() {
+  const name = document.getElementById("config_device_name").value;
+  const moisture_air = document.getElementById("moisture_air").value;
+  const moisture_water = document.getElementById("moisture_water").value;
+  const wait = document.getElementById("config_wait").value;
+  const payload = {
+    name,
+    moisture_air,
+    moisture_water,
+    wait,
+  };
+  fetch("/config", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  }).then(res => {
+    if (res.statusCode < 200 && res.statusCode >= 300) {
+      throw res;
+    }
+    alert("saved successfully!");
+  }).catch(err => {
+    console.error(err);
+    alert(err);
+  });
+}
+
+</script>
 
 {{ end }}
 
 {{ block "config_device_options" . }}
-<select id="config_device_name" name="config_device_name">
+<select id="config_device_name" name="config_device_name" onChange="deviceNameChange()">
   {{ range . }}
   <option label="{{ . }}" value="{{ . }}" />
   {{ end }}
