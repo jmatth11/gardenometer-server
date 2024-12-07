@@ -1,12 +1,9 @@
 {{ block "config_tab" . }}
 
 <div class="tabs tab-list" role="tablist">
-  <ul>
-    <li><button hx-get="/registration_list" role="tab" aria-selected="false" aria-controls="tab-content">Registered List</button></li>
-    <li class="is-active"><button hx-get="/config_tab" class="selected" role="tab" aria-selected="false" aria-controls="tab-content">Config</button></li>
-	  <li><button hx-get="/display" role="tab" aria-selected="false" aria-controls="tab-content">Display Charts</button></li>
-  </ul>
-
+    <button hx-get="/registration_list" role="tab" aria-selected="false" aria-controls="tab-content">Registered List</button>
+    <button hx-get="/config_tab" class="selected" role="tab" autofocus aria-selected="true" aria-controls="tab-content">Config</button>
+	  <button hx-get="/display" role="tab" aria-selected="false" aria-controls="tab-content">Display Charts</button>
 </div>
 
 <div id="tab-content" role="tabpanel" class="tab-content">
@@ -54,7 +51,7 @@
 {{ block "config_device_options" . }}
 <select id="config_device_name" name="config_device_name">
   {{ range . }}
-  <option id={{ . }} value={{ . }} />
+  <option label="{{ . }}" value="{{ . }}" />
   {{ end }}
 </select>
 {{ end }}

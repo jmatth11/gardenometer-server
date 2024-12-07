@@ -40,7 +40,7 @@ func getConfigTab(conn *sql.DB) echo.HandlerFunc {
       log.Println(err)
       return c.Render(http.StatusInternalServerError, "error", err)
     }
-    names := make([]string, len(req))
+    names := make([]string, 0, len(req))
     for _, v := range req {
       names = append(names, v.Name)
     }

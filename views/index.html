@@ -24,31 +24,11 @@
 </html>
 {{ end }}
 
-{{ block "config_form" . }}
-<form
-    hx-post="/item"
-    hx-target="#items"
-    hx-swap="afterbegin"
-    >
-  <div>Item</div>
-  <div>
-  <label for="name">Name</label><input type="text" id="name" name="name" />
-  </div>
-  <div>
-      <label for="amount">Amount</label><input type="number" id="amount" name="amount" />
-  </div>
-  <input type="submit" value="Add" />
-</form>
-{{ end }}
-
 {{ block "registration_list" . }}
 <div class="tabs tab-list" role="tablist">
-  <ul>
-    <li class="is-active"><button hx-get="/registration_list" class="selected" role="tab" aria-selected="false" aria-controls="tab-content">Registered List</button></li>
-    <li><button hx-get="/config_tab" role="tab" aria-selected="false" aria-controls="tab-content">Config</button></li>
-	  <li><button hx-get="/display" role="tab" aria-selected="false" aria-controls="tab-content">Display Charts</button></li>
-  </ul>
-
+    <button hx-get="/registration_list" class="selected" role="tab" aria-selected="true" autofocus aria-controls="tab-content">Registered List</button>
+    <button hx-get="/config_tab" role="tab" aria-selected="false" aria-controls="tab-content">Config</button>
+	  <button hx-get="/display" role="tab" aria-selected="false" aria-controls="tab-content">Display Charts</button>
 </div>
 
 <div id="tab-content" role="tabpanel" class="tab-content">
