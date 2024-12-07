@@ -16,7 +16,13 @@ func ReadRegistration(db *sql.DB, name string) (*models.Registration, error) {
   if (row == nil) {
     return result, errors.New("registration not found")
   }
-  row.Scan(&result.Name, &result.IsActive, &result.UpdatedAt)
+  err := row.Scan(&result.Name, &result.IsActive, &result.UpdatedAt)
+  if err == sql.ErrNoRows {
+    return nil, nil
+  }
+  if err != nil {
+    return nil, err
+  }
   return result, nil
 }
 

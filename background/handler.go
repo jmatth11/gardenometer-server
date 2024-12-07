@@ -28,7 +28,7 @@ func Start(exit chan bool, conn *sql.DB, emailClient *email.EmailClient) {
 }
 
 func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
-  activity, err := db.ReadLatestMetricForEachName(conn)
+  activities, err := db.ReadLatestMetricForEachName(conn)
   if err != nil {
     err := emailClient.SendMail(err.Error())
     if err != nil {
@@ -38,7 +38,11 @@ func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
   now := time.Now()
   timeThreshold := time.Minute * 10
   sb := strings.Builder{}
-  for _, e := range activity {
+  for _, e := range activities {
+    // skip inactive devices
+    if !e.IsActive {
+      continue
+    }
     diff := now.Sub(e.UpdatedAt)
     if diff > timeThreshold {
       sb.WriteString(e.Name)

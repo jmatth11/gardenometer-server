@@ -1,8 +1,10 @@
 package email
 
 import (
+	"bytes"
 	"fmt"
 	"net/smtp"
+	"strings"
 )
 
 const (
@@ -13,18 +15,27 @@ const (
 type EmailClient struct {
   To []string
   email string
-  client smtp.Auth
+  password string
 }
 
 func NewEmailClient(email string, password string) *EmailClient {
-  auth := smtp.PlainAuth("", email, password, SmtpHost)
   return &EmailClient{
     To: make([]string, 0),
-    client: auth,
     email: email,
+    password: password,
   }
 }
 
 func (ec *EmailClient) SendMail(message string) error {
-  return smtp.SendMail(fmt.Sprintf("%s:%s", SmtpHost, SmtpPort), ec.client, ec.email, ec.To, []byte(message))
+  auth := smtp.PlainAuth("", ec.email, ec.password, SmtpHost)
+  bodyMessage := bytes.Buffer{}
+  bodyMessage.WriteString("From: ")
+  bodyMessage.WriteString(ec.email)
+  bodyMessage.WriteString("\\r")
+  bodyMessage.WriteString("To: ")
+  bodyMessage.WriteString(strings.Join(ec.To, ", "))
+  bodyMessage.WriteString("\\r")
+  bodyMessage.WriteString("Subject: Gardenometer Update\\r\\r")
+  bodyMessage.WriteString(message)
+  return smtp.SendMail(fmt.Sprintf("%s:%s", SmtpHost, SmtpPort), auth, ec.email, ec.To, bodyMessage.Bytes())
 }

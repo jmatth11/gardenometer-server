@@ -59,7 +59,7 @@ func (sp *Payload) ParseStatus() models.Status {
         break;
       }
       case "id": {
-        result.Id = val
+        result.Id = strings.TrimSpace(val)
         break;
       }
       }

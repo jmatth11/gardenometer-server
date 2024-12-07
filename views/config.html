@@ -1,5 +1,60 @@
 {{ block "config_tab" . }}
 
+<div class="tabs tab-list" role="tablist">
+  <ul>
+    <li><button hx-get="/registration_list" role="tab" aria-selected="false" aria-controls="tab-content">Registered List</button></li>
+    <li class="is-active"><button hx-get="/config_tab" class="selected" role="tab" aria-selected="false" aria-controls="tab-content">Config</button></li>
+	  <li><button hx-get="/display" role="tab" aria-selected="false" aria-controls="tab-content">Display Charts</button></li>
+  </ul>
 
+</div>
 
+<div id="tab-content" role="tabpanel" class="tab-content">
+  <form
+  hx-post="/config">
+    <div>Config</div>
+    <div>
+      <label for="config_name">Device Name</label>
+      {{ template "config_device_options" .Devices }}
+    </div>
+    <div>
+      <label for="config_wait">Wait Duration</label>
+      <input type="number" id="config_wait" name="config_wait" />
+    </div>
+    <div>
+      <label for="moisture_pin">Moisture Pin</label>
+      <input type="number" id="moisture_pin" name="moisture_pin" />
+    </div>
+    <div>
+      <label for="temp_pin">Temperature Pin</label>
+      <input type="number" id="temp_pin" name="temp_pin" />
+    </div>
+    <div>
+      <label for="lux_pin">Lux Pin</label>
+      <input type="number" id="lux_pin" name="lux_pin" />
+    </div>
+    <div>
+      <label for="cal_pin">Calibration Light Pin</label>
+      <input type="number" id="cal_pin" name="cal_pin" />
+    </div>
+    <div>
+      <label for="err_pin">Error Light Pin</label>
+      <input type="number" id="err_pin" name="err_pin" />
+    </div>
+    <div>
+      <label for="good_pin">Good Light Pin</label>
+      <input type="number" id="good_pin" name="good_pin" />
+    </div>
+    <input type="submit" value="Submit" />
+  </form>
+</div>
+
+{{ end }}
+
+{{ block "config_device_options" . }}
+<select id="config_device_name" name="config_device_name">
+  {{ range . }}
+  <option id={{ . }} value={{ . }} />
+  {{ end }}
+</select>
 {{ end }}

@@ -16,3 +16,10 @@ CREATE TABLE IF NOT EXISTS registrations (
   updated_at timestamp NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS alerts (
+  id uuid NOT NULL PRIMARY KEY,
+  name varchar NOT NULL,
+  key_name integer NOT NULL,
+  value real NOT NULL
+);
+CREATE INDEX IF NOT EXISTS alerts_name_idx ON alerts ("name");
