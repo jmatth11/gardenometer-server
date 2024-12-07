@@ -14,7 +14,7 @@
 </head>
 <body>
     <div class="toast">
-        <div id="toast" class="">
+        <div hx-swap-oob="outerHTML:#toast" id="toast" class="">
         </div>
     </div>
 
@@ -59,7 +59,7 @@
 <tr>
   <td>{{ .Id }}</td>
   <td>{{ .Name }}</td>
-  <td>{{ .IsActive }}</td>
+  <td>{{ template "active_update" . }}</td>
   <td>{{ .Moisture }}</td>
   <td>{{ .Temp }}</td>
   <td>{{ .Lux }}</td>
@@ -78,4 +78,8 @@
 {{ block "error" . }}
   <div> ERROR: </div>
   <div> . </div>
+{{ end }}
+
+{{ block "active_update" . }}
+<button hx-get="/change-active/{{ .Name }}" hx-swap="innerHTML" hx-target="this">{{ .IsActive }}</button>
 {{ end }}
