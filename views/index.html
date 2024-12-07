@@ -18,18 +18,13 @@
         </div>
     </div>
 
-    <div>
-    {{ template "registration_list" . }}
-    </div>
-    <hr />
-    {{ template "item_list" .Items }}
-
+    <div id="tabs" hx-get="/registration_list" hx-trigger="load delay:100ms" hx-target="#tabs" hx-swap="innerHTML"></div>
 
 </body>
 </html>
 {{ end }}
 
-{{ block "registration_list" . }}
+{{ block "config_form" . }}
 <form
     hx-post="/item"
     hx-target="#items"
@@ -46,18 +41,50 @@
 </form>
 {{ end }}
 
-{{ block "item_list" . }}
-<div id="items">
-    {{ range . }}
-        {{ template "item_info" . }}
-    {{ end }}
+{{ block "registration_list" . }}
+<div class="tabs tab-list" role="tablist">
+  <ul>
+    <li class="is-active"><button hx-get="/registration_list" class="selected" role="tab" aria-selected="false" aria-controls="tab-content">Registered List</button></li>
+    <li><button hx-get="/config_tab" role="tab" aria-selected="false" aria-controls="tab-content">Config</button></li>
+	  <li><button hx-get="/display" role="tab" aria-selected="false" aria-controls="tab-content">Display Charts</button></li>
+  </ul>
+
+</div>
+
+<div id="tab-content" role="tabpanel" class="tab-content">
+  <table class="table" id="registration_list">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Is Active</th>
+        <th>Moisture</th>
+        <th>Temp</th>
+        <th>Lux</th>
+        <th>Registration Time</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{ range . }}
+          {{ template "registration_info" . }}
+      {{ end }}
+    </tbody>
+  </table>
 </div>
 {{ end }}
 
-
-{{ block "item_info" . }}
-<input type="checkbox" id="{{ .Id }}" name="{{ .Id }}" />
-<label for="{{ .Id }}">{{ .Name }}</label>
+{{ block "registration_info" . }}
+<tr>
+  <td>{{ .Id }}</td>
+  <td>{{ .Name }}</td>
+  <td>{{ .IsActive }}</td>
+  <td>{{ .Moisture }}</td>
+  <td>{{ .Temp }}</td>
+  <td>{{ .Lux }}</td>
+  <td>{{ .RegistrationUpdatedAt }}</td>
+  <td>{{ .UpdatedAt }}</td>
+</tr>
 {{ end }}
 
 {{ block "toast" . }}
