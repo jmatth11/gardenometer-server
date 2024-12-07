@@ -51,8 +51,15 @@ func createStatus(conn *sql.DB) echo.HandlerFunc {
   }
 }
 
+func createQueue() echo.HandlerFunc {
+  return func(c echo.Context) error {
+    return nil
+  }
+}
+
 func Setup(e *echo.Echo, conn *sql.DB) {
   e.GET("/", home)
   e.GET("/status", ping)
   e.POST("/status", createStatus(conn))
+  e.POST("/queue", createQueue())
 }
