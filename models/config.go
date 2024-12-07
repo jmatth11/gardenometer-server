@@ -12,11 +12,11 @@ const (
 )
 
 type Config struct {
-  Wait *int
-  Moisture *int
-  Temp *int
-  Lux *int
-  Cal *int
-  Err *int
-  Good *int
+  Wait *int `json:"wait"`
+  Moisture *int `json:"moisture"`
+  Temp *int `json:"temp"`
+  Lux *int `json:"lux"`
+  Cal *int `json:"cal"`
+  Err *int `json:"err"`
+  Good *int `json:"good"`
 }

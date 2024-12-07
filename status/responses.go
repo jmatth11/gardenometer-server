@@ -6,11 +6,6 @@ import (
 	"strings"
 )
 
-const (
-  Config = "config:"
-  Code = "code:"
-)
-
 func GenerateCalibrationResponse() string {
   return fmt.Sprintf("%s:", string(models.ActionCalibrate))
 }
