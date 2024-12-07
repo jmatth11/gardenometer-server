@@ -20,7 +20,7 @@ func getDisplay(conn *sql.DB) echo.HandlerFunc {
     if timeStr == "" {
       return c.Render(http.StatusBadRequest, "error", "Must supply a start time")
     }
-    start, err := time.Parse(time.RFC3339, timeStr)
+    start, err := time.Parse(time.DateOnly, timeStr)
     if err != nil {
       log.Println(err)
       return c.Render(http.StatusBadRequest, "toast", ErrorToast(err.Error()))
