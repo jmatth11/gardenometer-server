@@ -15,7 +15,7 @@ func (sp *Payload) Write(p []byte) (n int, err error) {
     sp.data = make([]byte, 0)
   }
   sp.data = append(sp.data, p...)
-  return len(p), nil
+  return len(sp.data), nil
 }
 
 func (sp *Payload) ParseStatus() models.Status {

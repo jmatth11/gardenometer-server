@@ -3,29 +3,44 @@ package routes
 import (
 	"database/sql"
 	"gardenometer/actions"
+	"gardenometer/db"
 	"gardenometer/email"
+	"gardenometer/models"
+	"io"
+	"log"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-func createConfig(conn *sql.DB, actionCache *actions.Queue, emailHandler *email.EmailClient) echo.HandlerFunc {
+func upsertConfig(conn *sql.DB, actionCache *actions.Queue, emailHandler *email.EmailClient) echo.HandlerFunc {
   return func(c echo.Context) error {
-
+    body := c.Request().Body
+    conf := new(models.ConfigRequest)
+    _, err := io.Copy(conf, body)
+    if err != nil {
+      log.Println(err)
+      return c.String(http.StatusInternalServerError, "error handling request")
+    }
+    configObj := conf.ParseConfig()
+    existingConf, err := db.ReadConfigForDevice(conn, configObj.Name)
+    if existingConf == nil && err == nil {
+      err := db.InsertConfigForDevice(conn, configObj)
+      if err != nil {
+        log.Println(err)
+        return c.String(http.StatusInternalServerError, "error inserting config")
+      }
+    }
+    if err != nil {
+      log.Println(err)
+      return c.String(http.StatusInternalServerError, "error reading config")
+    }
+    err = db.UpdateConfigForDevice(conn, configObj)
+    if err != nil {
+      log.Println(err)
+      return c.String(http.StatusInternalServerError, "error updating config")
+    }
     return nil
   }
 }
 
-// TODO flesh out form values
-// func configFormDataToModel(c echo.Context) models.Config {
-//   conf := models.Config{}
-//   name := c.FormValue("config_name")
-//   wait := c.FormValue("config_wait")
-//   moisture_pin := c.FormValue("moisture_pin")
-//   temp_pin := c.FormValue("temp_pin")
-//   lux_pin := c.FormValue("lux_pin")
-//   cal_pin := c.FormValue("cal_pin")
-//   err_pin := c.FormValue("err_pin")
-//   good_pin := c.FormValue("good_pin")
-//
-//   return conf
-// }

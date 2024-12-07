@@ -144,7 +144,7 @@ func Setup(e *echo.Echo, conn *sql.DB, actionCache *actions.Queue, emailHandler 
   e.POST("/status", createStatus(conn, actionCache, emailHandler))
   e.POST("/queue", createQueue(actionCache))
   e.POST("/alert", createAlert(conn))
-  e.POST("/config", createConfig(conn, actionCache, emailHandler))
+  e.POST("/config", upsertConfig(conn, actionCache, emailHandler))
   e.GET("/calibrate/:id", getCalibrate(conn, actionCache))
   e.GET("/change-active/:id", getFlipIsActive(conn))
   e.GET("/display", getDisplayPage(conn))
