@@ -6,7 +6,9 @@ import (
 	"gardenometer/db"
 	"gardenometer/email"
 	"gardenometer/routes"
+	"io"
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -17,6 +19,12 @@ func main() {
   if err != nil {
     panic(err)
   }
+  outputLog, err := os.Create("output.log")
+  if err != nil {
+    panic(err)
+  }
+  defer outputLog.Close()
+  log.SetOutput(io.MultiWriter(os.Stdout, outputLog))
   e := echo.New()
   db, err := db.Setup(env["DB_USER"], env["DB"], env["DB_PW"])
   if err != nil {
