@@ -49,6 +49,7 @@ func ReadAllRegistration(db *sql.DB) ([]models.Registration, error) {
 }
 
 func InsertRegistration(db *sql.DB, reg *models.Registration) error {
+  reg.UpdatedAt = time.Now().UTC()
   stmt, err := db.Prepare("INSERT INTO " + REGISTRATION_TABLE + " (name, is_active, updated_at) VALUES ( $1, $2, $3 )")
   if err != nil {
     return err
