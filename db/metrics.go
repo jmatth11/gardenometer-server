@@ -31,7 +31,7 @@ func ReadMetric(db *sql.DB, id uuid.UUID) (*models.Metric, error) {
 }
 
 func ReadMetricBetweenTimes(db *sql.DB, begin time.Time, end time.Time) ([]*models.Metric, error) {
-  rows, err := db.Query("SELECT * FROM " + METRIC_TABLE + " WHERE updated_at BETWEEN $1 AND $2", begin, end)
+  rows, err := db.Query("SELECT * FROM " + METRIC_TABLE + " WHERE updated_at BETWEEN $1 AND $2 ORDER BY updated_at ASC", begin, end)
   if err != nil {
     return nil, err
   }
