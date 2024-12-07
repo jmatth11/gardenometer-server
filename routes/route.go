@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gardenometer/actions"
 	"gardenometer/db"
+	"gardenometer/helpers"
 	"gardenometer/models"
 	"gardenometer/status"
 	"io"
@@ -12,12 +13,21 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+  "golang.org/x/time/rate"
 )
 
-func home(c echo.Context) error {
-  fmt.Println("calling from: ", c.Request().Header.Get("User-Agent"))
-  return c.String(http.StatusOK, "gardenometer")
+func getHome(conn *sql.DB, actionCache actions.Queue) echo.HandlerFunc {
+  return func (c echo.Context) error {
+    fmt.Println("calling from: ", c.Request().Header.Get("User-Agent"))
+    request, err := db.ReadAllRegistration(conn)
+    if err != nil {
+      return c.Render(http.StatusInternalServerError, "error", err)
+    }
+    return c.Render(http.StatusOK, "index", request)
+  }
 }
+
 
 func ping(c echo.Context) error {
   fmt.Println("calling from: ", c.Request().Header.Get("User-Agent"))
@@ -101,6 +111,16 @@ func createQueue(actionCache actions.Queue) echo.HandlerFunc {
 }
 
 func Setup(e *echo.Echo, conn *sql.DB, actionCache actions.Queue) {
+  e.Pre(middleware.RemoveTrailingSlash())
+  e.Use(middleware.Recover())
+  e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(
+      rate.Limit(20),
+  )))
+
+  e.Static("/css", "css")
+
+  helpers.NewTemplateRenderer(e)
+
   e.GET("/", home)
   e.GET("/status", ping)
   e.POST("/status", createStatus(conn, actionCache))

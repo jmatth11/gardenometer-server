@@ -1,0 +1,72 @@
+{{ block "index" . }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello, World!</title>
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
+    <link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
+>
+    <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="toast">
+        <div id="toast" class="">
+        </div>
+    </div>
+
+    <div>
+    {{ template "registration_list" . }}
+    </div>
+    <hr />
+    {{ template "item_list" .Items }}
+
+
+</body>
+</html>
+{{ end }}
+
+{{ block "registration_list" . }}
+<form
+    hx-post="/item"
+    hx-target="#items"
+    hx-swap="afterbegin"
+    >
+  <div>Item</div>
+  <div>
+  <label for="name">Name</label><input type="text" id="name" name="name" />
+  </div>
+  <div>
+      <label for="amount">Amount</label><input type="number" id="amount" name="amount" />
+  </div>
+  <input type="submit" value="Add" />
+</form>
+{{ end }}
+
+{{ block "item_list" . }}
+<div id="items">
+    {{ range . }}
+        {{ template "item_info" . }}
+    {{ end }}
+</div>
+{{ end }}
+
+
+{{ block "item_info" . }}
+<input type="checkbox" id="{{ .Id }}" name="{{ .Id }}" />
+<label for="{{ .Id }}">{{ .Name }}</label>
+{{ end }}
+
+{{ block "toast" . }}
+<div hx-swap-oob="outerHTML:#toast" id="toast" class="fade-out {{ .ClassName }}">
+        {{ .Message }}
+</div>
+{{ end }}
+
+{{ block "error" . }}
+  <div> ERROR: </div>
+  <div> . </div>
+{{ end }}
