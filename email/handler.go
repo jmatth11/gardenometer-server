@@ -35,7 +35,7 @@ func (ec *EmailClient) SendMail(message string) error {
   bodyMessage.WriteString("To: ")
   bodyMessage.WriteString(strings.Join(ec.To, ", "))
   bodyMessage.WriteString("\r\n")
-  bodyMessage.WriteString("Subject: Gardenometer Update\r\n")
+  bodyMessage.WriteString("Subject: Gardenometer Update\r\n\r\n")
   bodyMessage.WriteString(message)
   return smtp.SendMail(fmt.Sprintf("%s:%s", SmtpHost, SmtpPort), auth, ec.email, ec.To, bodyMessage.Bytes())
 }
