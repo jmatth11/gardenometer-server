@@ -1,0 +1,91 @@
+{{ block "display_page" . }}
+
+<div class="tabs tab-list" role="tablist">
+    <button hx-get="/registration_list" role="tab" aria-selected="false" aria-controls="tab-content">Registered List</button>
+    <button hx-get="/config_tab" role="tab" autofocus aria-selected="false" aria-controls="tab-content">Config</button>
+	  <button hx-get="/display" class="selected" role="tab" aria-selected="true" aria-controls="tab-content">Display Charts</button>
+</div>
+
+<div id="tab-content" role="tabpanel" class="tab-content">
+  <div>
+    <div>
+      <label>Device</label>
+    {{ template "device_select" .Devices }}
+    </div>
+    <div>
+      <label>Start Time</label>
+      <input id="start_time" type="date" onChange="drawChart" />
+    </div>
+  </div>
+  <div>
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const drawChart = () => {
+      const ctx = document.getElementById('myChart');
+      const device = document.getElementById('device_select').value;
+      const start_time = document.getElementById('start_time').value;
+      fetch(`/display/${device}/${start_time}`).then(res => {
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error(`${res.status}: ${res.text()}`);
+      }).then(data => {
+        const moisture = [];
+        const temp = [];
+        const light = [];
+        const timeline = [];
+        data.forEach(entry => {
+          moisture.push(entry.Moisture);
+          temp.push(entry.Temp);
+          light.push(entry.Lux);
+          timeline.push(entry.UpdatedAt);
+        });
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: timeline,
+            datasets: [{
+              label: 'Moisture',
+              data: moisture,
+              fill: false,
+              borderWidth: 1,
+              borderColor: Utils.CHART_COLORS.red,
+              backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
+              yAxisID: "y",
+            }, {
+              label: 'Light',
+              data: light,
+              fill: false,
+              borderWidth: 1,
+              borderColor: Utils.CHART_COLORS.blue,
+              backgroundColor: Utils.transparentize(Utils.CHART_COLORS.blue, 0.5),
+              yAxisID: "y1",
+            }, {
+              label: 'Temperature',
+              data: temp,
+              fill: false,
+              borderWidth: 1,
+              borderColor: Utils.CHART_COLORS.green,
+              backgroundColor: Utils.transparentize(Utils.CHART_COLORS.green, 0.5),
+              yAxisID: "y2",
+            }]
+          }
+        });
+      });
+    }
+  </script>
+</div>
+
+{{ end }}
+
+{{ block "device_select" . }}
+<select id="device_select" name="device_select" onChange="drawChart" >
+  {{ range . }}
+  <option label="{{ . }}" value="{{ . }}" />
+  {{ end }}
+</select>
+{{ end }}
