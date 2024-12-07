@@ -7,18 +7,18 @@ import (
 )
 
 const (
-  Calibration = "cal:"
   Config = "config:"
   Code = "code:"
 )
 
 func GenerateCalibrationResponse() string {
-  return Calibration
+  return fmt.Sprintf("%s:", string(models.ActionCalibrate))
 }
 
 func GenerateConfigResponse(c models.Config) string {
   sb := strings.Builder{}
-  sb.WriteString(Config)
+  sb.WriteString(string(models.ActionConfig))
+  sb.WriteString(":")
   second := false
   if c.Wait != nil {
     second = true
@@ -70,5 +70,5 @@ func GenerateConfigResponse(c models.Config) string {
 }
 
 func GenerateCodeResponse(code int) string {
-  return fmt.Sprintf("%s%d", Code, code)
+  return fmt.Sprintf("%s%d", models.ActionCode, code)
 }
