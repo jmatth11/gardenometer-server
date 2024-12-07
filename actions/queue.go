@@ -9,6 +9,12 @@ type Queue struct {
   data []models.Action
 }
 
+func NewQueue() *Queue {
+  return &Queue{
+    data: make([]models.Action, 0),
+  }
+}
+
 func (q *Queue) Push(s models.Action) {
   q.data = append(q.data, s)
 }

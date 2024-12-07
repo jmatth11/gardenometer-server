@@ -26,7 +26,7 @@ func main() {
   emailClient.To = []string{env["EMAIL_TO"]}
   var exit chan bool
   go background.Start(exit, db, emailClient)
-  activeCache := &actions.Queue{}
+  activeCache := actions.NewQueue()
   routes.Setup(e, db, activeCache, emailClient);
   err = e.Start(":8000")
   if err != nil {
