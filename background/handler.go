@@ -52,6 +52,16 @@ func checkDeviceActivity(conn *sql.DB, emailClient *email.EmailClient) {
       sb.WriteString("Last activity: ")
       sb.WriteString(e.UpdatedAt.String())
       sb.WriteString("\n")
+      // adding this for debugging
+      sb.WriteString("now: ")
+      sb.WriteString(now)
+      sb.WriteString("\n")
+      sb.WriteString("Diff: ")
+      sb.WriteString(diff)
+      sb.WriteString("\n")
+      sb.WriteString("timeThreshold: ")
+      sb.WriteString(timeThreshold)
+      sb.WriteString("\n")
     }
   }
   if shouldEmail {
